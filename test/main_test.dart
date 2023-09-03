@@ -83,10 +83,12 @@ class _MyHomePageState extends State<MyHomePage> {
         CustomTextField(
           controller: passwordController,
           label: "PASSWORD",
+          isPasswordInput: true,
         ),
         CustomTextField(
           controller: secondPasswordController,
           label: "RE-ENTER PASSWORD",
+          isPasswordInput: true,
         ),
         const Expanded(child: SizedBox.shrink()),
         if (emailController.text.isNotEmpty &&
@@ -109,6 +111,7 @@ class _MyHomePageState extends State<MyHomePage> {
         CustomTextField(
           controller: passwordController,
           label: "PASSWORD",
+          isPasswordInput: true,
           margin: const EdgeInsets.only(left: 20, right: 20, top: 10, bottom: 0),
           onChanged: (string) {
             setState(() {});
@@ -218,32 +221,71 @@ class OwnCard extends StatelessWidget {
   }
 }
 
-class CustomTextField extends StatelessWidget {
+class CustomTextField extends StatefulWidget {
   final TextEditingController controller;
   final String label;
   final void Function(String)? onChanged;
   final EdgeInsets? margin;
+  final bool? isPasswordInput;
 
   const CustomTextField(
       {super.key,
-      required this.controller,
-      required this.label,
-      this.margin,
-      this.onChanged});
+        required this.controller,
+        required this.label,
+        this.margin,
+        this.onChanged,
+      this.isPasswordInput});
+
+  @override
+  State<CustomTextField> createState() => _CustomTextFieldState();
+}
+
+class _CustomTextFieldState extends State<CustomTextField> {
+  late bool? obscureText;
+
+  showInput(){
+    setState(() {
+      obscureText = !obscureText!;
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    obscureText = widget.isPasswordInput;
+  }
 
   @override
   Widget build(BuildContext context) {
     return Container(
       height: 50,
-      margin: margin ?? const EdgeInsets.only(left: 20, right: 20, top: 10, bottom: 10),
-      child: TextField(
-        controller: controller,
-        obscureText: true,
-        decoration: InputDecoration(
-            border: const OutlineInputBorder(),
-            floatingLabelBehavior: FloatingLabelBehavior.always,
-            label: Text(label)),
-        onChanged: onChanged,
+      margin: widget.margin ?? const EdgeInsets.only(left: 20, right: 20, top: 10, bottom: 10),
+      child: Stack(
+        children: [
+          TextField(
+            controller: widget.controller,
+            obscureText: obscureText ?? false,
+            decoration: InputDecoration(
+                border: const OutlineInputBorder(),
+                floatingLabelBehavior: FloatingLabelBehavior.always,
+                label: Text(widget.label)),
+            onChanged: widget.onChanged,
+          ),
+          if(obscureText != null) Positioned(
+              right: 15,
+              top: 15,
+              child: InkWell(
+                onTap: () => showInput(),
+                child: const Row(
+                  children: [
+                    Icon(Icons.remove_red_eye_outlined, color: Colors.grey, size: 18,),
+                    SizedBox(width: 5),
+                    Text("show", style: TextStyle(color: Colors.grey, fontSize: 14),)
+                  ],
+                ),
+              ))
+        ],
       ),
     );
   }
